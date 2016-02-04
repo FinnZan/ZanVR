@@ -35,7 +35,7 @@ public class CommonTools {
 		source = claasname + "." + s.getMethodName();
 
 		mLogEvents.add(0, new LogEvent(source, Thread.currentThread().getId(), log));
-		Log.d("Radium", "[" + android.os.Process.myPid() + "] [" + Thread.currentThread().getId() + "] [" + source + "] " + log); // + " - [" + s.getFileName() + "(" + s.getLineNumber() + ")]");
+		Log.d("FinnZan", "[" + android.os.Process.myPid() + "] [" + Thread.currentThread().getId() + "] [" + source + "] " + log); // + " - [" + s.getFileName() + "(" + s.getLineNumber() + ")]");
 	}
 
 	public static Bitmap GetProfilePicture(Context context){

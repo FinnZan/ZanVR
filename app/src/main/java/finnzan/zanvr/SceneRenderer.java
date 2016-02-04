@@ -19,6 +19,7 @@ import finnzan.zanvr.mesh.MeshPrimitive;
 
 public class SceneRenderer implements Renderer {
 	private Mesh mesh;
+	private Mesh mGround;
 
 	private int[] textures;
 	private Bitmap bmpTex;
@@ -34,15 +35,22 @@ public class SceneRenderer implements Renderer {
 			Log.d("GL", "Load resources...");
 			AssetManager assets = context.getAssets();
 			bmpTex = BitmapFactory.decodeStream(assets.open("texture.png"));		        
-			bmpTile = BitmapFactory.decodeStream(assets.open("tile.png"));	
+			bmpTile = BitmapFactory.decodeStream(assets.open("room.png"));
 
 			InputStream is = assets.open("out.ims");
 			IndexMeshBuffer ims = new IndexMeshBuffer();
 			ims.Load(is);
 			this.mesh = new Mesh(ims);
 
+			IndexMeshBuffer ims2 = new IndexMeshBuffer();
+			ims2.Load(assets.open("room.ims"));
+			this.mGround = new Mesh(ims2);
+
+			/*
 			MeshPrimitive mp = new MeshPrimitive();
 			mp.LoadQuad(500);
+			this.mGround = new Mesh(mp.GetIndexedBuffer());
+			*/
 
 		} catch (Exception ex) {
 			Log.d("GL", ex.toString());
@@ -56,18 +64,19 @@ public class SceneRenderer implements Renderer {
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 
-		if (Global.SCENE_ELEVATION > 80)
-			Global.SCENE_ELEVATION  = 80;
-		if (Global.SCENE_ELEVATION  < 20)
-			Global.SCENE_ELEVATION = 20;
-		gl.glTranslatef(mShift, -Global.SCENE_ELEVATION, Global.TRANSLATE_Z);
+		float eX = (float)Math.sin(Global.ROTATE_Y) + Global.TRANSLATE_X;
+		float eZ = (float)-Math.cos(Global.ROTATE_Y) + Global.TRANSLATE_Z;
+		float eY = (float)Math.sin(Global.ROTATE_X - Math.PI/2) + Global.TRANSLATE_Y;
 
-		gl.glRotatef(Global.ROTATE_X, 1, 0, 0);
-		gl.glRotatef(Global.ROTATE_Y, 0, 1, 0);
-		
+		GLU.gluLookAt(gl, Global.TRANSLATE_X, Global.TRANSLATE_Y, Global.TRANSLATE_Z, eX, eY, eZ, 0f, 1f, 0f);
+
 		gl.glScalef(Global.SCENE_SCALE, Global.SCENE_SCALE, Global.SCENE_SCALE);
 
 		gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
+
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[1]);
+		this.mGround.Draw(gl);
+
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 		this.mesh.Draw(gl);
 
@@ -88,7 +97,7 @@ public class SceneRenderer implements Renderer {
 		try {
 			Log.d("GL", "Surface created ...");
 			
-			gl.glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+			gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			gl.glShadeModel(GL10.GL_SMOOTH);
 			gl.glClearDepthf(1.0f);
 			gl.glEnable(GL10.GL_DEPTH_TEST);
@@ -117,7 +126,6 @@ public class SceneRenderer implements Renderer {
 			gl.glEnable(GL10.GL_ALPHA_TEST);
 			gl.glAlphaFunc(GL10.GL_GREATER, 0.1f);	
 			gl.glEnable(GL10.GL_BLEND);
-			gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);	
 			gl.glTexEnvf(GL10.GL_TEXTURE_ENV, GL10.GL_TEXTURE_ENV_MODE, GL10.GL_REPLACE);
 	
 			textures = new int[2];

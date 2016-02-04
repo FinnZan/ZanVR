@@ -1,11 +1,17 @@
 package finnzan.zanvr;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.PixelFormat;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.TextView;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -13,7 +19,7 @@ import java.util.TimerTask;
 import finnzan.zanvr.util.CommonTools;
 
 public class MainActivity extends Activity {
-
+    private TextView tvOut;
     private GLSurfaceView mRightEyeView;
     private GLSurfaceView mLeftEyeView;
 
@@ -24,10 +30,15 @@ public class MainActivity extends Activity {
 
     private Timer mTimer = new Timer();
 
+    private SensorManager mSensorManager;
+    private Sensor mSensor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        tvOut = (TextView)this.findViewById(R.id.tvOut);
 
         mRenderR = new SceneRenderer(this, mEyeSpacing);
         mRightEyeView = (GLSurfaceView)this.findViewById(R.id.mRightEyeView);
@@ -44,7 +55,39 @@ public class MainActivity extends Activity {
         mLeftEyeView.setRenderer(this.mRenderL);
 
         timerHandler.postDelayed(timerRunnable, 0);
+
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        mSensorManager.registerListener(mSensorListener, mSensor, 100);
     }
+
+    private final SensorEventListener mSensorListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            float[] mRotationMatrix = new float[16];
+
+            if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+                String str = "";
+                for(float v : event.values){
+                    str += v + ",";
+                }
+                SensorManager.getRotationMatrixFromVector(mRotationMatrix, event.values);
+
+                float[] actual_orientation = new float[3];
+                SensorManager.getOrientation(mRotationMatrix, actual_orientation);
+
+                tvOut.setText(actual_orientation[0] + ", " + actual_orientation[1] + ", " + actual_orientation[2]);
+                //Global.ROTATE_Y = (float)(actual_orientation[0]/Math.PI * 180);
+                Global.ROTATE_Y = actual_orientation[0];
+                Global.ROTATE_X = actual_orientation[2];
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
@@ -52,9 +95,13 @@ public class MainActivity extends Activity {
 
         @Override
         public void run() {
-            mAngle += 0.01;
-            Global.ROTATE_Y += 1;
-            Global.TRANSLATE_Z = (-200.0f + 100.0f* (float)Math.sin(mAngle));
+            mAngle += 0.0025;
+
+            Global.TRANSLATE_Y = 20;
+
+            Global.TRANSLATE_X = 200 * (float)Math.sin(mAngle);
+            Global.TRANSLATE_Z = 200 * (float)Math.cos(mAngle);
+
             timerHandler.postDelayed(this, 16);
         }
     };

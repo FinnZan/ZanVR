@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF002255">
-<android.opengl.GLSurfaceView
-    android:id="@+id/mRightEyeView"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_weight="50"/>
-
-    <android.opengl.GLSurfaceView
-        android:id="@+id/mLeftEyeView"
+    android:background="#FF555555">
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="50"/>
-</LinearLayout>
+        android:layout_height="match_parent">
+        <android.opengl.GLSurfaceView
+            android:id="@+id/mRightEyeView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="50"
+            android:layout_marginRight="1dp" />
+
+        <android.opengl.GLSurfaceView
+            android:id="@+id/mLeftEyeView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="50"
+            android:layout_marginLeft="1dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</RelativeLayout>
