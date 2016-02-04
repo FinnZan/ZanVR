@@ -20,13 +20,9 @@ import finnzan.zanvr.util.CommonTools;
 
 public class MainActivity extends Activity {
     private TextView tvOut;
-    private GLSurfaceView mRightEyeView;
-    private GLSurfaceView mLeftEyeView;
+    private GLSurfaceView mSurfaceView;
 
-    private SceneRenderer mRenderR;
-    private SceneRenderer mRenderL;
-
-    private float mEyeSpacing = 10;
+    private SceneRenderer mRender;
 
     private Timer mTimer = new Timer();
 
@@ -40,25 +36,17 @@ public class MainActivity extends Activity {
 
         tvOut = (TextView)this.findViewById(R.id.tvOut);
 
-        mRenderR = new SceneRenderer(this, mEyeSpacing);
-        mRightEyeView = (GLSurfaceView)this.findViewById(R.id.mRightEyeView);
-        //glsScene.setEGLContextClientVersion(2);
-        mRightEyeView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-        mRightEyeView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        mRightEyeView.setRenderer(this.mRenderR);
-
-        mRenderL = new SceneRenderer(this, -mEyeSpacing);
-        mLeftEyeView = (GLSurfaceView)this.findViewById(R.id.mLeftEyeView);
-        //glsScene.setEGLContextClientVersion(2);
-        mLeftEyeView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-        mLeftEyeView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        mLeftEyeView.setRenderer(this.mRenderL);
+        mRender = new SceneRenderer(this);
+        mSurfaceView = (GLSurfaceView)this.findViewById(R.id.mSurfaceView);
+        mSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        mSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        mSurfaceView.setRenderer(this.mRender);
 
         timerHandler.postDelayed(timerRunnable, 0);
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        mSensorManager.registerListener(mSensorListener, mSensor, 100);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        mSensorManager.registerListener(mSensorListener, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     private final SensorEventListener mSensorListener = new SensorEventListener() {
@@ -68,7 +56,7 @@ public class MainActivity extends Activity {
 
             if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
                 String str = "";
-                for(float v : event.values){
+                for (float v : event.values) {
                     str += v + ",";
                 }
                 SensorManager.getRotationMatrixFromVector(mRotationMatrix, event.values);
@@ -77,8 +65,8 @@ public class MainActivity extends Activity {
                 SensorManager.getOrientation(mRotationMatrix, actual_orientation);
 
                 tvOut.setText(actual_orientation[0] + ", " + actual_orientation[1] + ", " + actual_orientation[2]);
-                //Global.ROTATE_Y = (float)(actual_orientation[0]/Math.PI * 180);
-                Global.ROTATE_Y = actual_orientation[0];
+
+                Global.ROTATE_Y = actual_orientation[0] + (float)Math.PI * 2;
                 Global.ROTATE_X = actual_orientation[2];
             }
         }
@@ -97,10 +85,13 @@ public class MainActivity extends Activity {
         public void run() {
             mAngle += 0.0025;
 
+            Global.TRANSLATE_Z = -200;
             Global.TRANSLATE_Y = 20;
 
+            /*
+            Global.TRANSLATE_Y = 20;
             Global.TRANSLATE_X = 200 * (float)Math.sin(mAngle);
-            Global.TRANSLATE_Z = 200 * (float)Math.cos(mAngle);
+            Global.TRANSLATE_Z = 200 * (float)Math.cos(mAngle);*/
 
             timerHandler.postDelayed(this, 16);
         }

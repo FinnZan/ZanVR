@@ -11,4 +11,6 @@ public class Global {
 	public static float TRANSLATE_Z = 0;
 
 	public static float SCENE_SCALE = 1;
+
+	public static float EYE_SPACING = 10;
 }
