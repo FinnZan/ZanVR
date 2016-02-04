@@ -28,6 +28,8 @@ public class SceneRenderer implements Renderer {
 	private  int mWidth = 0;
 	private  int mHeight = 0;
 
+	private float mAngle = 0;
+
 	public SceneRenderer(Context context) {
 		try {
 
@@ -124,6 +126,7 @@ public class SceneRenderer implements Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
+		mAngle += 0.25;
 
 		float cX = Global.TRANSLATE_X;
 		float cZ = Global.TRANSLATE_Z;
@@ -164,9 +167,11 @@ public class SceneRenderer implements Renderer {
 
 		gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
+
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[1]);
 		this.mGround.Draw(gl);
 
+		gl.glRotatef(mAngle, 0, 1, 0);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 		this.mesh.Draw(gl);
 	}

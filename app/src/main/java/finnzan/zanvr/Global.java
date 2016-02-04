@@ -12,5 +12,5 @@ public class Global {
 
 	public static float SCENE_SCALE = 1;
 
-	public static float EYE_SPACING = 10;
+	public static float EYE_SPACING = 2.5f;
 }

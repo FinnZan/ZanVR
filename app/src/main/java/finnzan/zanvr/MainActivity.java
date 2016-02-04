@@ -24,8 +24,6 @@ public class MainActivity extends Activity {
 
     private SceneRenderer mRender;
 
-    private Timer mTimer = new Timer();
-
     private SensorManager mSensorManager;
     private Sensor mSensor;
 
@@ -45,7 +43,12 @@ public class MainActivity extends Activity {
         timerHandler.postDelayed(timerRunnable, 0);
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+        if(mSensor == null) {
+            CommonTools.Log("TYPE_GAME_ROTATION_VECTOR not available.");
+            mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        }
+
         mSensorManager.registerListener(mSensorListener, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
@@ -54,7 +57,7 @@ public class MainActivity extends Activity {
         public void onSensorChanged(SensorEvent event) {
             float[] mRotationMatrix = new float[16];
 
-            if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+            if (event.sensor.getType() == Sensor.TYPE_GAME_ROTATION_VECTOR || event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
                 String str = "";
                 for (float v : event.values) {
                     str += v + ",";
@@ -66,7 +69,7 @@ public class MainActivity extends Activity {
 
                 tvOut.setText(actual_orientation[0] + ", " + actual_orientation[1] + ", " + actual_orientation[2]);
 
-                Global.ROTATE_Y = actual_orientation[0] + (float)Math.PI * 2;
+                Global.ROTATE_Y = actual_orientation[0];
                 Global.ROTATE_X = actual_orientation[2];
             }
         }
@@ -79,13 +82,11 @@ public class MainActivity extends Activity {
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
-        private float mAngle = 0;
 
         @Override
         public void run() {
-            mAngle += 0.0025;
 
-            Global.TRANSLATE_Z = -200;
+            Global.TRANSLATE_Z = 200;
             Global.TRANSLATE_Y = 20;
 
             /*
