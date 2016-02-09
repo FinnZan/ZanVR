@@ -15,7 +15,6 @@ import android.util.Log;
 
 import finnzan.zanvr.mesh.IndexMeshBuffer;
 import finnzan.zanvr.mesh.Mesh;
-import finnzan.zanvr.mesh.MeshPrimitive;
 
 public class SceneRenderer implements Renderer {
 	private Mesh mesh;
@@ -171,7 +170,7 @@ public class SceneRenderer implements Renderer {
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[1]);
 		this.mGround.Draw(gl);
 
-		gl.glRotatef(mAngle, 0, 1, 0);
+		gl.glRotatef(90 , 0, 1, 0);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 		this.mesh.Draw(gl);
 	}

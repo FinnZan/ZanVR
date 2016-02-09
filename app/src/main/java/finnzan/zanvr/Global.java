@@ -8,7 +8,11 @@ public class Global {
 
 	public static float TRANSLATE_X = 0;
 	public static float TRANSLATE_Y = 0;
-	public static float TRANSLATE_Z = 0;
+	public static float TRANSLATE_Z = 200;
+
+	public static float FORWARD_MOVEMENT = 0;
+	public static float SIDEWAY_MOVEMENT = 0;
+	public static float UPWARD_MOVEMENT = 0;
 
 	public static float SCENE_SCALE = 1;
 

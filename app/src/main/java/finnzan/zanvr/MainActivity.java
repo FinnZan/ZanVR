@@ -10,11 +10,11 @@ import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 import finnzan.zanvr.util.CommonTools;
 
@@ -52,6 +52,13 @@ public class MainActivity extends Activity {
         mSensorManager.registerListener(mSensorListener, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
+    public void onStart() {
+        super.onStart();
+        CommonTools.Log("onStart");
+        hideSystemUI();
+
+    }
+
     private final SensorEventListener mSensorListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
@@ -67,7 +74,9 @@ public class MainActivity extends Activity {
                 float[] actual_orientation = new float[3];
                 SensorManager.getOrientation(mRotationMatrix, actual_orientation);
 
-                tvOut.setText(actual_orientation[0] + ", " + actual_orientation[1] + ", " + actual_orientation[2]);
+                tvOut.setText(Global.TRANSLATE_X + "\n"
+                        + Global.TRANSLATE_Z + "\n"
+                        + (int)(Global.ROTATE_Y/Math.PI * 180));
 
                 Global.ROTATE_Y = actual_orientation[0];
                 Global.ROTATE_X = actual_orientation[2];
@@ -86,24 +95,71 @@ public class MainActivity extends Activity {
         @Override
         public void run() {
 
-            Global.TRANSLATE_Z = 200;
-            Global.TRANSLATE_Y = 20;
+            Global.TRANSLATE_Y += Global.UPWARD_MOVEMENT;
 
-            /*
-            Global.TRANSLATE_Y = 20;
-            Global.TRANSLATE_X = 200 * (float)Math.sin(mAngle);
-            Global.TRANSLATE_Z = 200 * (float)Math.cos(mAngle);*/
+            // Gravity pull
+            if(Global.TRANSLATE_Y <= 20) {
+                Global.TRANSLATE_Y = 20;
+            }else{
+                Global.TRANSLATE_Y -= 2;
+            }
+            Global.UPWARD_MOVEMENT /=2;
+
+            Global.TRANSLATE_X += -(Global.FORWARD_MOVEMENT * (float)Math.sin(Global.ROTATE_Y));
+            Global.TRANSLATE_Z += -(-Global.FORWARD_MOVEMENT * (float)Math.cos(Global.ROTATE_Y));
+
+            Global.TRANSLATE_X += (Global.SIDEWAY_MOVEMENT * (float)Math.sin(Global.ROTATE_Y + 90));
+            Global.TRANSLATE_Z += (-Global.SIDEWAY_MOVEMENT * (float)Math.cos(Global.ROTATE_Y + 90));
 
             timerHandler.postDelayed(this, 16);
         }
     };
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        boolean handled = false;
+        if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+            if (event.getRepeatCount() == 0) {
+                if(keyCode == KeyEvent.KEYCODE_BUTTON_A) {
+                    Global.UPWARD_MOVEMENT = 20;                }
+            }
+            if (handled) {
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
-    public void onStart() {
-        super.onStart();
-        CommonTools.Log("onStart");
-        hideSystemUI();
 
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        try {
+            if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
+                //CommonTools.Log(event.getAction() + "");
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    final int historySize = event.getHistorySize();
+
+                    for (int i = 0; i < historySize; i++) {
+                        //CommonTools.Log(event.getHistoricalAxisValue(MotionEvent.AXIS_X, i) + ", " + event.getAxisValue(MotionEvent.AXIS_Y, i));
+                    }
+
+                    //CommonTools.Log(event.getAxisValue(MotionEvent.AXIS_X) + ", " + event.getAxisValue(MotionEvent.AXIS_Y));
+                    Global.FORWARD_MOVEMENT = event.getAxisValue(MotionEvent.AXIS_Y);
+                    if (Math.abs(Global.FORWARD_MOVEMENT) < 0.01) {
+                        Global.FORWARD_MOVEMENT = 0;
+                    }
+
+                    Global.SIDEWAY_MOVEMENT = event.getAxisValue(MotionEvent.AXIS_X);
+                    if (Math.abs(Global.SIDEWAY_MOVEMENT) < 0.01) {
+                        Global.SIDEWAY_MOVEMENT = 0;
+                    }
+                    return true;
+                }
+            }
+        }catch (Exception ex){
+            CommonTools.HandleException(ex);
+        }
+        return super.onGenericMotionEvent(event);
     }
 
     private void hideSystemUI() {
