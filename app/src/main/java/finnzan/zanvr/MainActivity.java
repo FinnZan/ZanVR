@@ -98,8 +98,8 @@ public class MainActivity extends Activity {
             Global.TRANSLATE_Y += Global.UPWARD_MOVEMENT;
 
             // Gravity pull
-            if(Global.TRANSLATE_Y <= 20) {
-                Global.TRANSLATE_Y = 20;
+            if(Global.TRANSLATE_Y <= 50) {
+                Global.TRANSLATE_Y = 50;
             }else{
                 Global.TRANSLATE_Y -= 2;
             }

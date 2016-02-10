@@ -34,16 +34,18 @@ public class SceneRenderer implements Renderer {
 
 			Log.d("GL", "Load resources...");
 			AssetManager assets = context.getAssets();
-			bmpTex = BitmapFactory.decodeStream(assets.open("texture.png"));		        
-			bmpTile = BitmapFactory.decodeStream(assets.open("room.png"));
+			bmpTex = BitmapFactory.decodeStream(assets.open("F1.png"));
+			//bmpTile = BitmapFactory.decodeStream(assets.open("room.png"));
+			bmpTile = BitmapFactory.decodeStream(assets.open("beach_house.png"));
 
-			InputStream is = assets.open("out.ims");
+			InputStream is = assets.open("F1.ims");
 			IndexMeshBuffer ims = new IndexMeshBuffer();
 			ims.Load(is);
 			this.mesh = new Mesh(ims);
 
 			IndexMeshBuffer ims2 = new IndexMeshBuffer();
-			ims2.Load(assets.open("room.ims"));
+			//ims2.Load(assets.open("room.ims"));
+			ims2.Load(assets.open("beach_house.ims"));
 			this.mGround = new Mesh(ims2);
 
 			/*
@@ -172,7 +174,7 @@ public class SceneRenderer implements Renderer {
 
 		gl.glRotatef(90 , 0, 1, 0);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
-		this.mesh.Draw(gl);
+		//this.mesh.Draw(gl);
 	}
 
 	@Override
