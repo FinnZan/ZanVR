@@ -14,12 +14,14 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import finnzan.zanvr.util.CommonTools;
 
 public class MainActivity extends Activity {
     private TextView tvOut;
+    private Button btMode;
     private GLSurfaceView mSurfaceView;
 
     private SceneRenderer mRender;
@@ -33,6 +35,15 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         tvOut = (TextView)this.findViewById(R.id.tvOut);
+
+        btMode = (Button)this.findViewById(R.id.btMode);
+        btMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Global.IS_VR_MODE = !Global.IS_VR_MODE;
+            }
+        });
+
 
         mRender = new SceneRenderer(this);
         mSurfaceView = (GLSurfaceView)this.findViewById(R.id.mSurfaceView);

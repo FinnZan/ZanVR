@@ -17,4 +17,8 @@ public class Global {
 	public static float SCENE_SCALE = 5;
 
 	public static float EYE_SPACING = 2.5f;
+
+	public static boolean IS_VR_MODE = false;
+
+	public static float FAR_CLIP = 2000;
 }

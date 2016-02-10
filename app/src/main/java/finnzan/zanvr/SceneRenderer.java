@@ -139,21 +139,32 @@ public class SceneRenderer implements Renderer {
 
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
-		//left
-		gl.glViewport(0, 0, mWidth / 2 - 1, mHeight);
-		gl.glMatrixMode(GL10.GL_PROJECTION);
-		gl.glLoadIdentity();
-		GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 5.0f, 1000.0f);
+		if(Global.IS_VR_MODE) {
 
-		drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
+			//left
+			gl.glViewport(0, 0, mWidth / 2 - 1, mHeight);
+			gl.glMatrixMode(GL10.GL_PROJECTION);
+			gl.glLoadIdentity();
+			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 5.0f, Global.FAR_CLIP);
 
-		//right
-		gl.glViewport(mWidth / 2 + 1, 0, mWidth / 2 -1, mHeight);
-		gl.glMatrixMode(GL10.GL_PROJECTION);
-		gl.glLoadIdentity();
-		GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 5.0f, 1000.0f);
+			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
 
-		drawScene(gl, -Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
+			//right
+			gl.glViewport(mWidth / 2 + 1, 0, mWidth / 2 - 1, mHeight);
+			gl.glMatrixMode(GL10.GL_PROJECTION);
+			gl.glLoadIdentity();
+			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 5.0f, Global.FAR_CLIP);
+
+			drawScene(gl, -Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
+
+		}else{
+			gl.glViewport(0, 0, mWidth, mHeight);
+			gl.glMatrixMode(GL10.GL_PROJECTION);
+			gl.glLoadIdentity();
+			GLU.gluPerspective(gl, 45.0f, (float) mWidth / (float) mHeight, 5.0f, Global.FAR_CLIP);
+
+			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
+		}
 	}
 
 	private void drawScene(GL10 gl, float shift, float cX, float cY, float cZ, float eX, float eY, float eZ) {
@@ -172,7 +183,7 @@ public class SceneRenderer implements Renderer {
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[1]);
 		this.mGround.Draw(gl);
 
-		gl.glRotatef(90 , 0, 1, 0);
+		gl.glRotatef(90, 0, 1, 0);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 		//this.mesh.Draw(gl);
 	}

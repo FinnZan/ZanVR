@@ -3,18 +3,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FF555555">
-    <LinearLayout
+    <android.opengl.GLSurfaceView
+        android:id="@+id/mSurfaceView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <android.opengl.GLSurfaceView
-            android:id="@+id/mSurfaceView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="50"/>
-    </LinearLayout>
+        android:layout_height="match_parent"
+        />
 
     <TextView
         android:id="@+id/tvOut"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btMode"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true" />
 </RelativeLayout>
