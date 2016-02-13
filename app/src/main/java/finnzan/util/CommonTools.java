@@ -1,4 +1,4 @@
-package finnzan.zanvr.util;
+package finnzan.util;
 
 import android.content.Context;
 import android.content.Intent;

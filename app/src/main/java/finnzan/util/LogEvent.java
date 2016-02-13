@@ -1,4 +1,4 @@
-package finnzan.zanvr.util;
+package finnzan.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

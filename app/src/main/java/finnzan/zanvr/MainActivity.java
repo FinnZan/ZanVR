@@ -17,12 +17,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import finnzan.zanvr.util.CommonTools;
+import finnzan.util.CommonTools;
 
 public class MainActivity extends Activity {
     private TextView tvOut;
     private Button btMode;
     private GLSurfaceView mSurfaceView;
+    private TextView tvInfoL;
+    private TextView tvInfoR;
 
     private SceneRenderer mRender;
 
@@ -44,6 +46,8 @@ public class MainActivity extends Activity {
             }
         });
 
+        tvInfoL = (TextView)this.findViewById(R.id.tvInfoL);
+        tvInfoR = (TextView)this.findViewById(R.id.tvInfoR);
 
         mRender = new SceneRenderer(this);
         mSurfaceView = (GLSurfaceView)this.findViewById(R.id.mSurfaceView);
@@ -61,13 +65,19 @@ public class MainActivity extends Activity {
         }
 
         mSensorManager.registerListener(mSensorListener, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        SetScreenText("Ready");
     }
 
     public void onStart() {
         super.onStart();
         CommonTools.Log("onStart");
         hideSystemUI();
+    }
 
+    public void SetScreenText(String text){
+        tvInfoL.setText(text);
+        tvInfoR.setText(text);
     }
 
     private final SensorEventListener mSensorListener = new SensorEventListener() {
@@ -130,13 +140,13 @@ public class MainActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         boolean handled = false;
         if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+            CommonTools.Log("Key [" + keyCode + "]");
             if (event.getRepeatCount() == 0) {
-                if(keyCode == KeyEvent.KEYCODE_BUTTON_A) {
-                    Global.UPWARD_MOVEMENT = 20;                }
+                if (keyCode == KeyEvent.KEYCODE_BUTTON_X) {
+                    Global.UPWARD_MOVEMENT = 20;
+                }
             }
-            if (handled) {
-                return true;
-            }
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
