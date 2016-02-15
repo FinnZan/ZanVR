@@ -14,14 +14,15 @@ public class Global {
 	public static float SIDEWAY_MOVEMENT = 0;
 	public static float UPWARD_MOVEMENT = 0;
 
-	public static float SCENE_SCALE = 10;
+	public static float SCENE_SCALE = 0.5f;
 
-	public static float EYE_HEIGHT = 160;
+	public static float EYE_HEIGHT = 100;
 
 	public static float EYE_SPACING = 2.5f;
 
+	public static float STEP_SIZE = 5;
 
 	public static boolean IS_VR_MODE = true;
 
-	public static float FAR_CLIP = 2000;
+	public static float FAR_CLIP = 10000;
 }

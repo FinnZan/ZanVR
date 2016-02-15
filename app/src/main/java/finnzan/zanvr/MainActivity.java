@@ -116,21 +116,21 @@ public class MainActivity extends Activity {
         @Override
         public void run() {
 
-            Global.TRANSLATE_Y += Global.UPWARD_MOVEMENT;
+            Global.TRANSLATE_Y += Global.UPWARD_MOVEMENT * Global.SCENE_SCALE;;
 
             // Gravity pull
             if(Global.TRANSLATE_Y <= Global.EYE_HEIGHT) {
                 Global.TRANSLATE_Y = Global.EYE_HEIGHT;
             }else{
-                Global.TRANSLATE_Y -= 2;
+                Global.TRANSLATE_Y -= 2 * Global.SCENE_SCALE;;
             }
             Global.UPWARD_MOVEMENT /=2;
 
-            Global.TRANSLATE_X += -(Global.FORWARD_MOVEMENT * (float)Math.sin(Global.ROTATE_Y));
-            Global.TRANSLATE_Z += -(-Global.FORWARD_MOVEMENT * (float)Math.cos(Global.ROTATE_Y));
+            Global.TRANSLATE_X += -(Global.FORWARD_MOVEMENT * (float)Math.sin(Global.ROTATE_Y)) * Global.SCENE_SCALE * Global.STEP_SIZE;
+            Global.TRANSLATE_Z += -(-Global.FORWARD_MOVEMENT * (float)Math.cos(Global.ROTATE_Y)) * Global.SCENE_SCALE * Global.STEP_SIZE;
 
-            Global.TRANSLATE_X += (Global.SIDEWAY_MOVEMENT * (float)Math.sin(Global.ROTATE_Y + 90));
-            Global.TRANSLATE_Z += (-Global.SIDEWAY_MOVEMENT * (float)Math.cos(Global.ROTATE_Y + 90));
+            Global.TRANSLATE_X += (Global.SIDEWAY_MOVEMENT * (float)Math.sin(Global.ROTATE_Y + 90)) * Global.SCENE_SCALE * Global.STEP_SIZE;
+            Global.TRANSLATE_Z += (-Global.SIDEWAY_MOVEMENT * (float)Math.cos(Global.ROTATE_Y + 90)) * Global.SCENE_SCALE * Global.STEP_SIZE;
 
             timerHandler.postDelayed(this, 16);
         }

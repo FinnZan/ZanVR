@@ -2,6 +2,8 @@ package finnzan.zanvr;
 
 import java.io.InputStream;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
@@ -17,12 +19,11 @@ import finnzan.zanvr.mesh.IndexMeshBuffer;
 import finnzan.zanvr.mesh.Mesh;
 
 public class SceneRenderer implements Renderer {
-	private Mesh mesh;
-	private Mesh mGround;
+	private Context mContext;
 
-	private int[] textures;
-	private Bitmap bmpTex;
-	private Bitmap bmpTile;
+	private ArrayList<Renderable> mRenderables = new ArrayList<Renderable>();
+
+	private TextureStore mTextureStore = null;
 
 	private  int mWidth = 0;
 	private  int mHeight = 0;
@@ -30,23 +31,37 @@ public class SceneRenderer implements Renderer {
 	private float mAngle = 0;
 
 	public SceneRenderer(Context context) {
+		mContext = context;
+
 		try {
+
+			mTextureStore = new TextureStore();
 
 			Log.d("GL", "Load resources...");
 			AssetManager assets = context.getAssets();
-			bmpTex = BitmapFactory.decodeStream(assets.open("F1.png"));
-			//bmpTile = BitmapFactory.decodeStream(assets.open("room.png"));
-			bmpTile = BitmapFactory.decodeStream(assets.open("beach_house.png"));
 
-			InputStream is = assets.open("F1.ims");
-			IndexMeshBuffer ims = new IndexMeshBuffer();
-			ims.Load(is);
-			this.mesh = new Mesh(ims);
+			Renderable f1 = new Renderable(assets.open("F1.ims"), "F1.png");
+			f1.Scale = 5;
+			mRenderables.add(f1);
 
-			IndexMeshBuffer ims2 = new IndexMeshBuffer();
-			//ims2.Load(assets.open("room.ims"));
-			ims2.Load(assets.open("beach_house.ims"));
-			this.mGround = new Mesh(ims2);
+			Renderable room = new Renderable(assets.open("room.ims"), "room.png");
+			room.Scale = 5;
+			room.IsCullFace = false;
+			mRenderables.add(room);
+
+			Renderable F26 = new Renderable(assets.open("26F.ims"), "26F.png");
+			F26.IsCullFace = false;
+			F26.Scale = 25;
+			F26.Translation[0] = -200;
+			F26.Translation[2] = -2000;
+			mRenderables.add(F26);
+
+			Renderable beach_house = new Renderable(assets.open("beach_house.ims"), "beach_house.png");
+			beach_house.IsCullFace = false;
+			beach_house.Scale = 10;
+			beach_house.Translation[0] = -200;
+			beach_house.Translation[2] = 2500;
+			mRenderables.add(beach_house);
 
 			/*
 			MeshPrimitive mp = new MeshPrimitive();
@@ -72,8 +87,6 @@ public class SceneRenderer implements Renderer {
 			gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
 
 			gl.glFrontFace(GL10.GL_CCW);
-			//gl.glEnable(GL10.GL_CULL_FACE);
-			gl.glDisable(GL10.GL_CULL_FACE);
 
 			FloatBuffer ambient = FloatBuffer.allocate(4);
 			ambient.put(0.5f);
@@ -87,30 +100,13 @@ public class SceneRenderer implements Renderer {
 			position.put(100f);
 			position.put(1f);
 
-			float[] mycolor = { 0.8f, 0.7f, 0.6f, 1.0f };
+			float[] mycolor = {0.8f, 0.7f, 0.6f, 1.0f};
 			gl.glMaterialfv(GL10.GL_FRONT, GL10.GL_AMBIENT_AND_DIFFUSE, mycolor, 0);
 			gl.glEnable(GL10.GL_TEXTURE_2D);
 			gl.glEnable(GL10.GL_ALPHA_TEST);
 			gl.glAlphaFunc(GL10.GL_GREATER, 0.1f);
 			gl.glEnable(GL10.GL_BLEND);
 			gl.glTexEnvf(GL10.GL_TEXTURE_ENV, GL10.GL_TEXTURE_ENV_MODE, GL10.GL_REPLACE);
-
-			textures = new int[2];
-			gl.glGenTextures(2, textures, 0);
-
-			gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
-			gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-			gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
-			gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_REPEAT);
-			gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_REPEAT);
-			GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bmpTex, 0);
-
-			gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[1]);
-			gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-			gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
-			gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_REPEAT);
-			gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T,GL10.GL_REPEAT);
-			GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bmpTile, 0);
 
 			float[] fogColor = { 0, 0, 0, 0 };
 			gl.glFogx(GL10.GL_FOG_MODE, GL10.GL_EXP2);
@@ -145,7 +141,7 @@ public class SceneRenderer implements Renderer {
 			gl.glViewport(0, 0, mWidth / 2 - 1, mHeight);
 			gl.glMatrixMode(GL10.GL_PROJECTION);
 			gl.glLoadIdentity();
-			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 5.0f, Global.FAR_CLIP);
+			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
 
 			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
 
@@ -153,7 +149,7 @@ public class SceneRenderer implements Renderer {
 			gl.glViewport(mWidth / 2 + 1, 0, mWidth / 2 - 1, mHeight);
 			gl.glMatrixMode(GL10.GL_PROJECTION);
 			gl.glLoadIdentity();
-			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 5.0f, Global.FAR_CLIP);
+			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
 
 			drawScene(gl, -Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
 
@@ -161,7 +157,7 @@ public class SceneRenderer implements Renderer {
 			gl.glViewport(0, 0, mWidth, mHeight);
 			gl.glMatrixMode(GL10.GL_PROJECTION);
 			gl.glLoadIdentity();
-			GLU.gluPerspective(gl, 45.0f, (float) mWidth / (float) mHeight, 5.0f, Global.FAR_CLIP);
+			GLU.gluPerspective(gl, 45.0f, (float) mWidth / (float) mHeight, 10.0f, Global.FAR_CLIP);
 
 			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
 		}
@@ -179,13 +175,20 @@ public class SceneRenderer implements Renderer {
 
 		gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
+		for (Renderable r: mRenderables) {
+			gl.glPushMatrix();
+			gl.glTranslatef(r.Translation[0], r.Translation[1], r.Translation[2]);
+			gl.glScalef(r.Scale, r.Scale, r.Scale);
+			gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextureStore.GetTexture(mContext, gl, r.Texture));
 
-		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[1]);
-		this.mGround.Draw(gl);
-
-		gl.glRotatef(90, 0, 1, 0);
-		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
-		//this.mesh.Draw(gl);
+			if(r.IsCullFace) {
+				gl.glEnable(GL10.GL_CULL_FACE);
+			}else {
+				gl.glDisable(GL10.GL_CULL_FACE);
+			}
+			r.Mesh.Draw(gl);
+			gl.glPopMatrix();
+		}
 	}
 
 	@Override
