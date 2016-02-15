@@ -27,7 +27,6 @@ public class MainActivity extends Activity {
     private TextView tvInfoR;
 
     private SceneRenderer mRender;
-
     private SensorManager mSensorManager;
     private Sensor mSensor;
 
@@ -75,32 +74,29 @@ public class MainActivity extends Activity {
         hideSystemUI();
     }
 
-    public void SetScreenText(String text){
-        tvInfoL.setText(text);
-        tvInfoR.setText(text);
-    }
+    // time function
+    Handler timerHandler = new Handler();
+    Runnable timerRunnable = new Runnable() {
 
+        @Override
+        public void run() {
+            Global.Observer.takeTimeEvent();
+            timerHandler.postDelayed(this, 16);
+        }
+    };
+
+    // region Input Handling ===============
     private final SensorEventListener mSensorListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
             float[] mRotationMatrix = new float[16];
 
             if (event.sensor.getType() == Sensor.TYPE_GAME_ROTATION_VECTOR || event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-                String str = "";
-                for (float v : event.values) {
-                    str += v + ",";
-                }
                 SensorManager.getRotationMatrixFromVector(mRotationMatrix, event.values);
 
                 float[] actual_orientation = new float[3];
                 SensorManager.getOrientation(mRotationMatrix, actual_orientation);
-
-                tvOut.setText(Global.TRANSLATE_X + "\n"
-                        + Global.TRANSLATE_Z + "\n"
-                        + (int)(Global.ROTATE_Y/Math.PI * 180));
-
-                Global.ROTATE_Y = actual_orientation[0];
-                Global.ROTATE_X = actual_orientation[2];
+                Global.Observer.takeGyro(actual_orientation);
             }
         }
 
@@ -110,47 +106,18 @@ public class MainActivity extends Activity {
         }
     };
 
-    Handler timerHandler = new Handler();
-    Runnable timerRunnable = new Runnable() {
-
-        @Override
-        public void run() {
-
-            Global.TRANSLATE_Y += Global.UPWARD_MOVEMENT * Global.SCENE_SCALE;;
-
-            // Gravity pull
-            if(Global.TRANSLATE_Y <= Global.EYE_HEIGHT) {
-                Global.TRANSLATE_Y = Global.EYE_HEIGHT;
-            }else{
-                Global.TRANSLATE_Y -= 2 * Global.SCENE_SCALE;;
-            }
-            Global.UPWARD_MOVEMENT /=2;
-
-            Global.TRANSLATE_X += -(Global.FORWARD_MOVEMENT * (float)Math.sin(Global.ROTATE_Y)) * Global.SCENE_SCALE * Global.STEP_SIZE;
-            Global.TRANSLATE_Z += -(-Global.FORWARD_MOVEMENT * (float)Math.cos(Global.ROTATE_Y)) * Global.SCENE_SCALE * Global.STEP_SIZE;
-
-            Global.TRANSLATE_X += (Global.SIDEWAY_MOVEMENT * (float)Math.sin(Global.ROTATE_Y + 90)) * Global.SCENE_SCALE * Global.STEP_SIZE;
-            Global.TRANSLATE_Z += (-Global.SIDEWAY_MOVEMENT * (float)Math.cos(Global.ROTATE_Y + 90)) * Global.SCENE_SCALE * Global.STEP_SIZE;
-
-            timerHandler.postDelayed(this, 16);
-        }
-    };
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         boolean handled = false;
         if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
             CommonTools.Log("Key [" + keyCode + "]");
             if (event.getRepeatCount() == 0) {
-                if (keyCode == KeyEvent.KEYCODE_BUTTON_X) {
-                    Global.UPWARD_MOVEMENT = 20;
-                }
+                Global.Observer.takeKeyEvent(keyCode);
             }
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
-
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
@@ -164,16 +131,7 @@ public class MainActivity extends Activity {
                         //CommonTools.Log(event.getHistoricalAxisValue(MotionEvent.AXIS_X, i) + ", " + event.getAxisValue(MotionEvent.AXIS_Y, i));
                     }
 
-                    //CommonTools.Log(event.getAxisValue(MotionEvent.AXIS_X) + ", " + event.getAxisValue(MotionEvent.AXIS_Y));
-                    Global.FORWARD_MOVEMENT = event.getAxisValue(MotionEvent.AXIS_Y);
-                    if (Math.abs(Global.FORWARD_MOVEMENT) < 0.01) {
-                        Global.FORWARD_MOVEMENT = 0;
-                    }
-
-                    Global.SIDEWAY_MOVEMENT = event.getAxisValue(MotionEvent.AXIS_X);
-                    if (Math.abs(Global.SIDEWAY_MOVEMENT) < 0.01) {
-                        Global.SIDEWAY_MOVEMENT = 0;
-                    }
+                    Global.Observer.takeMotionEvent(event);
                     return true;
                 }
             }
@@ -183,6 +141,9 @@ public class MainActivity extends Activity {
         return super.onGenericMotionEvent(event);
     }
 
+    // endregion
+
+    // region UI Runtines =================
     private void hideSystemUI() {
         // Set the IMMERSIVE flag.
         // Set the content to appear under the system bars so that the content
@@ -205,4 +166,11 @@ public class MainActivity extends Activity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
+
+    public void SetScreenText(String text){
+        tvInfoL.setText(text);
+        tvInfoR.setText(text);
+    }
+
+    // endregion
 }

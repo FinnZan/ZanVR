@@ -1,6 +1,5 @@
 package finnzan.zanvr;
 
-import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
@@ -8,15 +7,9 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLU;
-import android.opengl.GLUtils;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
-
-import finnzan.zanvr.mesh.IndexMeshBuffer;
-import finnzan.zanvr.mesh.Mesh;
 
 public class SceneRenderer implements Renderer {
 	private Context mContext;
@@ -125,13 +118,16 @@ public class SceneRenderer implements Renderer {
 	public void onDrawFrame(GL10 gl) {
 		mAngle += 0.25;
 
-		float cX = Global.TRANSLATE_X;
-		float cZ = Global.TRANSLATE_Z;
-		float cY = Global.TRANSLATE_Y;
+		float[] pos = Global.Observer.getPosition();
+		float[] eye = Global.Observer.getEyeVect();
 
-		float eX = (float)Math.sin(Global.ROTATE_Y) + cX;
-		float eZ = (float)-Math.cos(Global.ROTATE_Y) + cZ;
-		float eY = (float)Math.sin(Global.ROTATE_X - Math.PI/2) + cY;
+		float cX = pos[0];
+		float cZ = pos[2];
+		float cY = pos[1];
+
+		float eX = eye[0] + cX;
+		float eZ = eye[2] + cZ;
+		float eY = eye[1] + cY;
 
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
