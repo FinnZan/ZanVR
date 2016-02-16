@@ -32,6 +32,8 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        CommonTools.Log("onCreate");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -65,22 +67,42 @@ public class MainActivity extends Activity {
 
         mSensorManager.registerListener(mSensorListener, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
+        getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+
+            }
+        });
+
         SetScreenText("Ready");
     }
 
     public void onStart() {
-        super.onStart();
         CommonTools.Log("onStart");
+        super.onStart();
+    }
+
+
+
+    @Override
+    public void onResume(){
+        CommonTools.Log("onResume");
+        super.onResume();
         hideSystemUI();
     }
 
     // time function
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
-
         @Override
         public void run() {
             Global.Observer.takeTimeEvent();
+            float pos[] = Global.Observer.getPosition();
+            float eye[] = Global.Observer.getEyeVect();
+
+            tvOut.setText("Position [" + (int)pos[0] + "] [" + pos[1] + "] [" + pos[2] + "]\n" +
+                          "Eye Vector [" + String.format("%.2f", eye[0]) + "] [" + String.format("%.2f", eye[1]) + "] [" + String.format("%.2f", eye[2]) + "]");
+
             timerHandler.postDelayed(this, 16);
         }
     };
@@ -105,6 +127,13 @@ public class MainActivity extends Activity {
 
         }
     };
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e){
+        CommonTools.Log("onTouchEvent");
+        hideSystemUI();
+        return super.onTouchEvent(e);
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -144,11 +173,8 @@ public class MainActivity extends Activity {
     // endregion
 
     // region UI Runtines =================
-    private void hideSystemUI() {
-        // Set the IMMERSIVE flag.
-        // Set the content to appear under the system bars so that the content
-        // doesn't resize when the system bars hide and show.
 
+    private void hideSystemUI() {
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
