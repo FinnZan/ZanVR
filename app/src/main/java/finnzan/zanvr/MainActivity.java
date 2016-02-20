@@ -98,9 +98,11 @@ public class MainActivity extends Activity {
         public void run() {
             Global.Observer.takeTimeEvent();
             float pos[] = Global.Observer.getPosition();
+            float rot[] = Global.Observer.getBodyRotation();
             float eye[] = Global.Observer.getEyeVect();
 
-            tvOut.setText("Position [" + (int)pos[0] + "] [" + pos[1] + "] [" + pos[2] + "]\n" +
+            tvOut.setText("Position [" + (int)pos[0] + "] [" + (int)pos[1] + "] [" + (int)pos[2] + "]\n" +
+                          "Body Rotation [" + (int)rot[0] + "] [" + (int)rot[1] + "] [" + (int)rot[2] + "]\n" +
                           "Eye Vector [" + String.format("%.2f", eye[0]) + "] [" + String.format("%.2f", eye[1]) + "] [" + String.format("%.2f", eye[2]) + "]");
 
             timerHandler.postDelayed(this, 16);

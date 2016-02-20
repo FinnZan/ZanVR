@@ -1,8 +1,6 @@
 package finnzan.zanvr;
 
 public class Global {
-	//in radius
-	public static float SCENE_SCALE = 0.5f;
 
 	public static float EYE_SPACING = 2.5f;
 

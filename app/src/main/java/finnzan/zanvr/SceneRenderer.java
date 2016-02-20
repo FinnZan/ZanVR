@@ -23,6 +23,9 @@ public class SceneRenderer implements Renderer {
 
 	private float mAngle = 0;
 
+	private Renderable mCockpit = null;
+
+
 	public SceneRenderer(Context context) {
 		mContext = context;
 
@@ -33,6 +36,9 @@ public class SceneRenderer implements Renderer {
 			Log.d("GL", "Load resources...");
 			AssetManager assets = context.getAssets();
 
+			mCockpit = new Renderable(assets.open("F1.ims"), "F1.png");
+			mCockpit.Scale = 5;
+
 			Renderable f1 = new Renderable(assets.open("F1.ims"), "F1.png");
 			f1.Scale = 5;
 			mRenderables.add(f1);
@@ -41,26 +47,6 @@ public class SceneRenderer implements Renderer {
 			room.Scale = 5;
 			room.IsCullFace = false;
 			mRenderables.add(room);
-
-			Renderable F26 = new Renderable(assets.open("26F.ims"), "26F.png");
-			F26.IsCullFace = false;
-			F26.Scale = 25;
-			F26.Translation[0] = -200;
-			F26.Translation[2] = -2000;
-			mRenderables.add(F26);
-
-			Renderable beach_house = new Renderable(assets.open("beach_house.ims"), "beach_house.png");
-			beach_house.IsCullFace = false;
-			beach_house.Scale = 10;
-			beach_house.Translation[0] = -200;
-			beach_house.Translation[2] = 2500;
-			mRenderables.add(beach_house);
-
-			/*
-			MeshPrimitive mp = new MeshPrimitive();
-			mp.LoadQuad(500);
-			this.mGround = new Mesh(mp.GetIndexedBuffer());
-			*/
 
 		} catch (Exception ex) {
 			Log.d("GL", ex.toString());
@@ -125,9 +111,11 @@ public class SceneRenderer implements Renderer {
 		float cZ = pos[2];
 		float cY = pos[1];
 
-		float eX = eye[0] + cX;
-		float eZ = eye[2] + cZ;
-		float eY = eye[1] + cY;
+		float eX = eye[0];
+		float eZ = eye[2];
+		float eY = eye[1];
+
+		float br = -(float)(Global.Observer.getBodyRotation()[1]/Math.PI * 180);
 
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
@@ -139,7 +127,7 @@ public class SceneRenderer implements Renderer {
 			gl.glLoadIdentity();
 			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
 
-			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
+			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, br);
 
 			//right
 			gl.glViewport(mWidth / 2 + 1, 0, mWidth / 2 - 1, mHeight);
@@ -147,7 +135,7 @@ public class SceneRenderer implements Renderer {
 			gl.glLoadIdentity();
 			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
 
-			drawScene(gl, -Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
+			drawScene(gl, -Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, br);
 
 		}else{
 			gl.glViewport(0, 0, mWidth, mHeight);
@@ -155,19 +143,28 @@ public class SceneRenderer implements Renderer {
 			gl.glLoadIdentity();
 			GLU.gluPerspective(gl, 45.0f, (float) mWidth / (float) mHeight, 10.0f, Global.FAR_CLIP);
 
-			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ);
+			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, br);
 		}
 	}
 
-	private void drawScene(GL10 gl, float shift, float cX, float cY, float cZ, float eX, float eY, float eZ) {
+	private void drawScene(GL10 gl, float shift, float cX, float cY, float cZ, float eX, float eY, float eZ, float br) {
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 
 		gl.glTranslatef(shift, 0, 0);
 
-		GLU.gluLookAt(gl, cX, cY, cZ, eX, eY, eZ, 0f, 1f, 0f);
+		GLU.gluLookAt(gl, 0, 0, 0, eX, eY, eZ, 0f, 1f, 0f);
 
-		gl.glScalef(Global.SCENE_SCALE, Global.SCENE_SCALE, Global.SCENE_SCALE);
+		gl.glPushMatrix();
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextureStore.GetTexture(mContext, gl, mCockpit.Texture));
+		gl.glRotatef(br, 0, 1, 0);
+		gl.glTranslatef(0, -35, -20);
+		gl.glScalef(1.5f, 1.5f, 1.5f);
+		gl.glDisable(GL10.GL_CULL_FACE);
+		mCockpit.Mesh.Draw(gl);
+		gl.glPopMatrix();
+
+		gl.glTranslatef(-cX, -cY, -cZ);
 
 		gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
