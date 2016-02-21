@@ -48,6 +48,13 @@ public class SceneRenderer implements Renderer {
 			room.IsCullFace = false;
 			mRenderables.add(room);
 
+			Renderable beach_house = new Renderable(assets.open("beach_house.ims"), "beach_house.png");
+			beach_house.IsCullFace = false;
+			beach_house.Scale = 10;
+			beach_house.Translation[0] = -200;
+			beach_house.Translation[2] = 2500;
+			mRenderables.add(beach_house);
+
 		} catch (Exception ex) {
 			Log.d("GL", ex.toString());
 		}
@@ -125,7 +132,7 @@ public class SceneRenderer implements Renderer {
 			gl.glViewport(0, 0, mWidth / 2 - 1, mHeight);
 			gl.glMatrixMode(GL10.GL_PROJECTION);
 			gl.glLoadIdentity();
-			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
+			GLU.gluPerspective(gl, 60.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
 
 			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, br);
 
@@ -133,7 +140,7 @@ public class SceneRenderer implements Renderer {
 			gl.glViewport(mWidth / 2 + 1, 0, mWidth / 2 - 1, mHeight);
 			gl.glMatrixMode(GL10.GL_PROJECTION);
 			gl.glLoadIdentity();
-			GLU.gluPerspective(gl, 45.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
+			GLU.gluPerspective(gl, 60.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
 
 			drawScene(gl, -Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, br);
 
@@ -155,14 +162,16 @@ public class SceneRenderer implements Renderer {
 
 		GLU.gluLookAt(gl, 0, 0, 0, eX, eY, eZ, 0f, 1f, 0f);
 
-		gl.glPushMatrix();
-		gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextureStore.GetTexture(mContext, gl, mCockpit.Texture));
-		gl.glRotatef(br, 0, 1, 0);
-		gl.glTranslatef(0, -35, -20);
-		gl.glScalef(1.5f, 1.5f, 1.5f);
-		gl.glDisable(GL10.GL_CULL_FACE);
-		mCockpit.Mesh.Draw(gl);
-		gl.glPopMatrix();
+		if(!Global.Observer.IsWalkMode) {
+			gl.glPushMatrix();
+			gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextureStore.GetTexture(mContext, gl, mCockpit.Texture));
+			gl.glRotatef(br, 0, 1, 0);
+			gl.glTranslatef(0, -Global.Observer.getPosition()[1], -20); // shift the car so I am right in the cockpit
+			gl.glScalef(mCockpit.Scale, mCockpit.Scale, mCockpit.Scale);
+			gl.glDisable(GL10.GL_CULL_FACE);
+			mCockpit.Mesh.Draw(gl);
+			gl.glPopMatrix();
+		}
 
 		gl.glTranslatef(-cX, -cY, -cZ);
 

@@ -10,18 +10,22 @@ import finnzan.util.CommonTools;
  * Created by finnb on 2/15/2016.
  */
 public class Observer {
-    public static float[] mEyeVect = {0,0,-1};
-    public static float[] mFrontVect = {0,0,-1};
-    private static float[] mPosition = {0, 0, 1000};
+    public float[] mEyeVect = {0,0,-1};
+    public float[] mFrontVect = {0,0,-1};
+    private float[] mPosition = {0, 0, 1000};
 
-    private static float[] mHeadRotation = {0, 0, 0};
-    private static float[] mBodyRotation = {0, 0, 0};
+    private float[] mHeadRotation = {0, 0, 0};
+    private float[] mBodyRotation = {0, 0, 0};
 
-    private static float[] mMovement = {0, 0, 0};
-    private static float mSpin = 0;
+    private float mHeadYZero = 0;
 
-    private static float mEyeHeight = 100;
-    private static float mStepSize = 10;
+    private float[] mMovement = {0, 0, 0};
+    private float mSpin = 0;
+
+    private float mEyeHeight = 100;
+    private float mStepSize = 10;
+
+    public boolean IsWalkMode = false;
 
     public void takeTimeEvent(){
         mPosition[1] += mMovement[1];
@@ -38,8 +42,13 @@ public class Observer {
         updateFrontVect();
         updateEyeVect();
 
-        mPosition[0] += -mMovement[2] * mFrontVect[0] * mStepSize;
-        mPosition[2] += -mMovement[2] * mFrontVect[2] * mStepSize;
+        if(IsWalkMode) {
+            mPosition[0] += -mMovement[2] * mEyeVect[0] * mStepSize;
+            mPosition[2] += -mMovement[2] * mEyeVect[2] * mStepSize;
+        }else{
+            mPosition[0] += -mMovement[2] * mFrontVect[0] * mStepSize;
+            mPosition[2] += -mMovement[2] * mFrontVect[2] * mStepSize;
+        }
     }
 
     public void takeGyro(float[] rotation) {
@@ -53,6 +62,20 @@ public class Observer {
     public void takeKeyEvent(int keyCode) {
         if (keyCode == KeyEvent.KEYCODE_BUTTON_X) {
             mMovement[1] = 20;
+        }
+
+        //re-center
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_A) {
+            mHeadYZero = mHeadRotation[1];
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_Y) {
+            IsWalkMode = !IsWalkMode;
+            if(IsWalkMode){
+                mEyeHeight = 150;
+            }else{
+                mEyeHeight = 100;
+            }
         }
     }
 
@@ -76,9 +99,9 @@ public class Observer {
     }
 
     private void updateEyeVect(){
-        mEyeVect[0] = (float)Math.sin(mHeadRotation[1] + mBodyRotation[1]);
+        mEyeVect[0] = (float)Math.sin(mHeadRotation[1] - mHeadYZero + mBodyRotation[1]);
         mEyeVect[1] = (float)Math.sin(mHeadRotation[0] - Math.PI/2);
-        mEyeVect[2] = (float)-Math.cos(mHeadRotation[1]+ mBodyRotation[1]);
+        mEyeVect[2] = (float)-Math.cos(mHeadRotation[1] - mHeadYZero + mBodyRotation[1]);
     }
 
     public float[] getFrontVect(){
