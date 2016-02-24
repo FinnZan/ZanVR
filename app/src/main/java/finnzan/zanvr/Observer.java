@@ -1,6 +1,5 @@
 package finnzan.zanvr;
 
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -10,20 +9,23 @@ import finnzan.util.CommonTools;
  * Created by finnb on 2/15/2016.
  */
 public class Observer {
+    public static float EYE_HEIGHT_SIT = 20;
+    public static float EYE_HEIGHT_STAND = 35;
+
     public float[] mEyeVect = {0,0,-1};
     public float[] mFrontVect = {0,0,-1};
-    private float[] mPosition = {0, 0, 1000};
+    private float[] mPosition = {0, 0, -180};
+    private float[] mEyePosition = {0, EYE_HEIGHT_SIT, 5};
 
     private float[] mHeadRotation = {0, 0, 0};
-    private float[] mBodyRotation = {0, 0, 0};
+    private float[] mBodyRotation = {0, (float)Math.PI, 0};
 
     private float mHeadYZero = 0;
 
     private float[] mMovement = {0, 0, 0};
     private float mSpin = 0;
 
-    private float mEyeHeight = 100;
-    private float mStepSize = 10;
+    private float mStepSize = 2;
 
     public boolean IsWalkMode = false;
 
@@ -31,11 +33,11 @@ public class Observer {
         mPosition[1] += mMovement[1];
 
         // Gravity pull
-        if(mPosition[1] <= mEyeHeight) {
-            mPosition[1] = mEyeHeight;
-        }else{
-            mPosition[1] -= 1;
+        mPosition[1] -= 1;
+        if(mPosition[1] <= 0) {
+            mPosition[1] = 0;
         }
+
         mMovement[1] /=2;
 
         mBodyRotation[1] += mSpin/8;
@@ -43,9 +45,13 @@ public class Observer {
         updateEyeVect();
 
         if(IsWalkMode) {
+            mEyePosition[1] = (mEyePosition[1] + EYE_HEIGHT_STAND)/2;
+
             mPosition[0] += -mMovement[2] * mEyeVect[0] * mStepSize;
             mPosition[2] += -mMovement[2] * mEyeVect[2] * mStepSize;
         }else{
+            mEyePosition[1] = (mEyePosition[1] + EYE_HEIGHT_SIT)/2;
+
             mPosition[0] += -mMovement[2] * mFrontVect[0] * mStepSize;
             mPosition[2] += -mMovement[2] * mFrontVect[2] * mStepSize;
         }
@@ -72,9 +78,9 @@ public class Observer {
         if (keyCode == KeyEvent.KEYCODE_BUTTON_Y) {
             IsWalkMode = !IsWalkMode;
             if(IsWalkMode){
-                mEyeHeight = 150;
+                //mEyePosition[1] = EYE_HEIGHT_STAND;
             }else{
-                mEyeHeight = 100;
+                //mEyePosition[1] = EYE_HEIGHT_SIT;
             }
         }
     }
@@ -114,6 +120,10 @@ public class Observer {
 
     public float[] getPosition(){
         return mPosition;
+    }
+
+    public float[] getEyePosition(){
+        return mEyePosition;
     }
 
     public float[] getBodyRotation(){

@@ -11,6 +11,8 @@ import android.opengl.GLU;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
 
+import finnzan.zanvr.mesh.Line;
+
 public class SceneRenderer implements Renderer {
 	private Context mContext;
 
@@ -37,22 +39,22 @@ public class SceneRenderer implements Renderer {
 			AssetManager assets = context.getAssets();
 
 			mCockpit = new Renderable(assets.open("F1.ims"), "F1.png");
-			mCockpit.Scale = 5;
+			mCockpit.Scale = 1;
 
 			Renderable f1 = new Renderable(assets.open("F1.ims"), "F1.png");
-			f1.Scale = 5;
+			f1.Scale = 1;
 			mRenderables.add(f1);
 
 			Renderable room = new Renderable(assets.open("room.ims"), "room.png");
-			room.Scale = 5;
+			room.Scale = 1;
 			room.IsCullFace = false;
 			mRenderables.add(room);
 
 			Renderable beach_house = new Renderable(assets.open("beach_house.ims"), "beach_house.png");
 			beach_house.IsCullFace = false;
-			beach_house.Scale = 10;
-			beach_house.Translation[0] = -200;
-			beach_house.Translation[2] = 2500;
+			beach_house.Scale = 2;
+			beach_house.Translation[0] = -50;
+			beach_house.Translation[2] = 500;
 			mRenderables.add(beach_house);
 
 		} catch (Exception ex) {
@@ -112,15 +114,20 @@ public class SceneRenderer implements Renderer {
 		mAngle += 0.25;
 
 		float[] pos = Global.Observer.getPosition();
+		float[] epos = Global.Observer.getEyePosition();
 		float[] eye = Global.Observer.getEyeVect();
 
 		float cX = pos[0];
-		float cZ = pos[2];
 		float cY = pos[1];
+		float cZ = pos[2];
 
 		float eX = eye[0];
-		float eZ = eye[2];
 		float eY = eye[1];
+		float eZ = eye[2];
+
+		float epX = epos[0];
+		float epY = epos[1];
+		float epZ = epos[2];
 
 		float br = -(float)(Global.Observer.getBodyRotation()[1]/Math.PI * 180);
 
@@ -132,33 +139,35 @@ public class SceneRenderer implements Renderer {
 			gl.glViewport(0, 0, mWidth / 2 - 1, mHeight);
 			gl.glMatrixMode(GL10.GL_PROJECTION);
 			gl.glLoadIdentity();
-			GLU.gluPerspective(gl, 60.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
+			GLU.gluPerspective(gl, 60.0f, (float) mWidth / 2 / (float) mHeight, Global.NEAR_CLIP, Global.FAR_CLIP);
 
-			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, br);
+			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, epX, epY, epZ,br);
 
 			//right
 			gl.glViewport(mWidth / 2 + 1, 0, mWidth / 2 - 1, mHeight);
 			gl.glMatrixMode(GL10.GL_PROJECTION);
 			gl.glLoadIdentity();
-			GLU.gluPerspective(gl, 60.0f, (float) mWidth / 2 / (float) mHeight, 10.0f, Global.FAR_CLIP);
+			GLU.gluPerspective(gl, 60.0f, (float) mWidth / 2 / (float) mHeight, Global.NEAR_CLIP, Global.FAR_CLIP);
 
-			drawScene(gl, -Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, br);
+			drawScene(gl, -Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, epX, epY, epZ,br);
 
 		}else{
 			gl.glViewport(0, 0, mWidth, mHeight);
 			gl.glMatrixMode(GL10.GL_PROJECTION);
 			gl.glLoadIdentity();
-			GLU.gluPerspective(gl, 45.0f, (float) mWidth / (float) mHeight, 10.0f, Global.FAR_CLIP);
+			GLU.gluPerspective(gl, 45.0f, (float) mWidth / (float) mHeight, Global.NEAR_CLIP, Global.FAR_CLIP);
 
-			drawScene(gl, Global.EYE_SPACING, cX, cY, cZ, eX, eY, eZ, br);
+			drawScene(gl, 0, cX, cY, cZ, eX, eY, eZ, epX, epY, epZ,br);
 		}
 	}
 
-	private void drawScene(GL10 gl, float shift, float cX, float cY, float cZ, float eX, float eY, float eZ, float br) {
+	private void drawScene(GL10 gl, float shift, float cX, float cY, float cZ, float eX, float eY, float eZ, float epX, float epY, float epZ, float br) {
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 
 		gl.glTranslatef(shift, 0, 0);
+
+		gl.glTranslatef(-epX, -epY, -epZ);
 
 		GLU.gluLookAt(gl, 0, 0, 0, eX, eY, eZ, 0f, 1f, 0f);
 
@@ -166,7 +175,6 @@ public class SceneRenderer implements Renderer {
 			gl.glPushMatrix();
 			gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextureStore.GetTexture(mContext, gl, mCockpit.Texture));
 			gl.glRotatef(br, 0, 1, 0);
-			gl.glTranslatef(0, -Global.Observer.getPosition()[1], -20); // shift the car so I am right in the cockpit
 			gl.glScalef(mCockpit.Scale, mCockpit.Scale, mCockpit.Scale);
 			gl.glDisable(GL10.GL_CULL_FACE);
 			mCockpit.Mesh.Draw(gl);
@@ -174,6 +182,13 @@ public class SceneRenderer implements Renderer {
 		}
 
 		gl.glTranslatef(-cX, -cY, -cZ);
+
+		float gird_space = 100;
+		int grid_size = 20;
+		for(float i=-grid_size/2;i<=grid_size/2;i+=1) {
+			Line.draw(gl, gird_space* i, -10, -gird_space*grid_size/2, gird_space* i, -10, gird_space*grid_size/2);
+			Line.draw(gl, -gird_space*grid_size/2, -10, gird_space* i, gird_space*grid_size/2, -10, gird_space*i);
+		}
 
 		gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
